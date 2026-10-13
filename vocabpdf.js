@@ -423,5 +423,111 @@
     return out;
   }
 
-  return { extractPdf, parseVocab, findTarget, baseForms, similar, maskInText, buildLines, columnSplit };
+  /* ============================================================
+     6. JSON 단어장
+     ------------------------------------------------------------
+     받는 모양:
+       - 이 앱의 백업        {app:'vocab-flashcards', decks:[{deck:{name}, words:[…], stats}]}
+       - 단어장 하나         {name|title, words|cards|entries|items|vocab: […]}
+       - 단어 배열           […]
+     단어 하나의 키는 여러 이름을 받는다 (term/word, ko/korean/meaning, def/definition/english, ex/example/sentence …).
+     빈칸은 유효한 blanks 범위 → 예문 속 {{정답}}·**정답** 표시 → 표제어로 찾기 순서로 정한다.
+     ============================================================ */
+  const pick = (o, keys) => {
+    for (const k of keys) if (o[k] != null && o[k] !== '') return o[k];
+    return undefined;
+  };
+  const str = v => (v == null ? '' : Array.isArray(v) ? v.filter(x => x != null).join('; ') : String(v)).replace(/\s+/g, ' ').trim();
+
+  /** '… {{accumulated}} …' 또는 '… **accumulated** …' → 표시를 지운 문장과 빈칸 범위 */
+  function stripMarkers(text) {
+    const re = /\{\{([^{}]+?)\}\}|\*\*([^*]+?)\*\*/g;
+    let out = '', pos = 0, m;
+    const blanks = [];
+    while ((m = re.exec(text))) {
+      out += text.slice(pos, m.index);
+      const ans = m[1] != null ? m[1] : m[2];
+      blanks.push([out.length, out.length + ans.length]);
+      out += ans;
+      pos = m.index + m[0].length;
+    }
+    return { text: out + text.slice(pos), blanks };
+  }
+  function validBlanks(list, text) {
+    if (!Array.isArray(list)) return [];
+    return list
+      .map(r => (Array.isArray(r) ? r : r && typeof r === 'object' ? [r.start, r.end] : null))
+      .filter(r => r && Number.isInteger(r[0]) && Number.isInteger(r[1]) && r[0] >= 0 && r[0] < r[1] && r[1] <= text.length && text.slice(r[0], r[1]).trim())
+      .map(r => [r[0], r[1]])
+      .sort((a, b) => a[0] - b[0])
+      .filter((r, i, a) => i === 0 || r[0] >= a[i - 1][1]);
+  }
+  function exampleOf(raw, term) {
+    let text = '', given;
+    if (raw && typeof raw === 'object' && !Array.isArray(raw)) {
+      text = str(pick(raw, ['text', 'ex', 'sentence', 'example']));
+      given = raw.blanks;
+    } else text = str(raw);
+    if (!text) return null;
+    let blanks = validBlanks(given, text);
+    if (!blanks.length) {
+      const s = stripMarkers(text);
+      if (s.blanks.length) { text = s.text; blanks = s.blanks; }
+    }
+    if (!blanks.length) blanks = findTarget(text, term);
+    return { text, blanks };
+  }
+  function jsonWord(w) {
+    if (!w || typeof w !== 'object' || Array.isArray(w)) return null;
+    const term = str(pick(w, ['term', 'word', 'headword', 'vocab', 'en_word', 'english_word', '단어']));
+    if (!term) return null;
+    let ko = str(pick(w, ['ko', 'korean', 'kor', 'meaning_ko', 'ko_meaning', 'translation', '뜻', '한국어']));
+    let def = str(pick(w, ['def', 'definition', 'english', 'en', 'meaning_en', 'en_meaning', 'gloss', '영어뜻']));
+    const meaning = str(w.meaning);
+    if (meaning) { if (HANGUL_RE.test(meaning)) { if (!ko) ko = meaning; } else if (!def) def = meaning; }
+    const pos = str(pick(w, ['pos', 'partOfSpeech', 'part_of_speech', 'type', '품사']));
+    // 예문: ex/example/sentence (+ blanks) 또는 examples 배열
+    let examples = [];
+    const exRaw = pick(w, ['ex', 'example', 'sentence', 'context', '예문']);
+    if (exRaw != null) {
+      const e = exampleOf(typeof exRaw === 'object' ? exRaw : { text: exRaw, blanks: w.blanks }, term);
+      if (e) examples.push(e);
+    }
+    if (Array.isArray(w.examples)) w.examples.forEach(x => { const e = exampleOf(x, term); if (e) examples.push(e); });
+    // 빈칸 있는 예문을 앞으로
+    examples = examples.filter(e => e.blanks.length).concat(examples.filter(e => !e.blanks.length));
+    return {
+      id: w.id != null ? String(w.id) : null,
+      term, pos, ko, def, examples,
+      core: !!pick(w, ['core', 'essential', 'important']),
+      fav: !!pick(w, ['fav', 'favorite', 'star', 'starred']),
+    };
+  }
+  const LIST_KEYS = ['words', 'cards', 'entries', 'items', 'vocab', 'vocabulary', 'list'];
+  /** JSON 값 → {decks: [{title, entries, stats}]} — 단어를 하나도 못 찾으면 에러 */
+  function parseJson(data) {
+    const decks = [];
+    const fromList = (list, title, stats) => {
+      const entries = (list || []).map(jsonWord).filter(Boolean);
+      if (entries.length) decks.push({ title: str(title), entries, stats: stats && typeof stats === 'object' && !Array.isArray(stats) ? stats : null });
+    };
+    if (Array.isArray(data)) fromList(data, '');
+    else if (data && typeof data === 'object') {
+      if (Array.isArray(data.decks)) {
+        data.decks.forEach(x => {
+          if (!x || typeof x !== 'object') return;
+          const meta = x.deck && typeof x.deck === 'object' ? x.deck : x;
+          const list = Array.isArray(x.words) ? x.words : LIST_KEYS.map(k => x[k]).find(Array.isArray);
+          fromList(list, pick(meta, ['name', 'title']), x.stats);
+        });
+      } else {
+        const list = LIST_KEYS.map(k => data[k]).find(Array.isArray);
+        if (list) fromList(list, pick(data, ['name', 'title', 'deck']), data.stats);
+      }
+    }
+    if (!decks.length) throw new Error('단어 목록을 찾지 못했습니다 — term(단어) 키가 있는 항목 배열이 필요합니다');
+    return { decks };
+  }
+
+  return { extractPdf, parseVocab, parseJson, findTarget, baseForms, similar, maskInText, buildLines, columnSplit };
 });

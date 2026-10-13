@@ -434,6 +434,7 @@ mark.ans { background: var(--accent-soft); color: var(--accent-ink); border-radi
 .tok-pick .tok:hover { background: var(--accent-soft); }
 .tok-pick .tok.on { background: var(--accent); color: #fff; box-shadow: 0 0 0 2px var(--accent); }
 .hint { font-size: 11.5px; color: var(--ink-4); line-height: 1.6; }
+.hint code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; background: var(--sunken); padding: 1px 5px; border-radius: 4px; }
 
 /* 토스트 */
 #toasts { position: fixed; z-index: 80; left: 50%; bottom: 28px; transform: translateX(-50%); display: flex; flex-direction: column; gap: 8px; align-items: center; pointer-events: none; }
@@ -526,7 +527,7 @@ mark.ans { background: var(--accent-soft); color: var(--accent-ink); border-radi
         <div class="rail-group">
           <div class="rail-actions">
             <button class="act primary wide" id="btn-import">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>단어장 PDF 올리기</button>
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>단어장 올리기 (PDF · JSON)</button>
             <button class="act" id="btn-list">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>단어 목록</button>
             <button class="act" id="btn-reset">
@@ -589,11 +590,11 @@ mark.ans { background: var(--accent-soft); color: var(--accent-ink); border-radi
         </div>
 
         <div class="empty-state" id="empty" hidden>
-          <h2>단어장 PDF를 올려 주세요</h2>
-          <p>단어 · 품사 · 뜻 · 예문이 적힌 단어장 PDF를 올리면 단어를 자동으로 뽑아, <b>영어 뜻풀이</b>를 보고 <b>예문 빈칸</b>에 단어를 채우는 문제로 만들어 줍니다.</p>
+          <h2>단어장을 올려 주세요</h2>
+          <p>단어 · 품사 · 뜻 · 예문이 적힌 단어장 PDF나 JSON을 올리면 단어를 자동으로 뽑아, <b>영어 뜻풀이</b>를 보고 <b>예문 빈칸</b>에 단어를 채우는 문제로 만들어 줍니다.</p>
           <div class="drop-zone" id="empty-drop" tabindex="0" role="button" aria-label="PDF 파일 고르기">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>
-            <h4>PDF를 여기로 끌어다 놓거나 클릭해서 고르기</h4>
+            <h4>PDF · JSON을 여기로 끌어다 놓거나 클릭해서 고르기</h4>
             <p>여러 파일을 한 번에 올려도 됩니다</p>
           </div>
         </div>
@@ -619,17 +620,17 @@ mark.ans { background: var(--accent-soft); color: var(--accent-ink); border-radi
 <div class="modal" id="m-import" hidden>
   <div class="sheet">
     <div class="sheet-head">
-      <div><h3>단어장 PDF 가져오기</h3><div class="sub" id="imp-sub">PDF에서 단어 · 품사 · 한국어 뜻 · 영어 뜻 · 예문을 뽑습니다</div></div>
+      <div><h3>단어장 가져오기</h3><div class="sub" id="imp-sub">PDF · JSON에서 단어 · 품사 · 한국어 뜻 · 영어 뜻 · 예문을 뽑습니다</div></div>
       <button class="icon-btn" data-close aria-label="닫기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6 6 18"/></svg></button>
     </div>
     <div class="sheet-body">
       <div id="imp-pick">
         <div class="drop-zone" id="imp-drop" tabindex="0" role="button" aria-label="PDF 파일 고르기">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H6a1 1 0 0 0-1 1v16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V8z"/><path d="M14 3v5h5M12 18v-6M9 15l3-3 3 3"/></svg>
-          <h4>PDF를 끌어다 놓거나 클릭해서 고르기</h4>
+          <h4>PDF · JSON을 끌어다 놓거나 클릭해서 고르기</h4>
           <p>예: <i>accumulate v. 축적하다 — to gather or increase something over time</i> / <i>Example: …</i></p>
         </div>
-        <p class="hint" style="margin-top:12px">예문에서 <b>굵게</b> 표시된 단어가 빈칸이 됩니다. 굵은 표시가 없으면 표제어와 같은 단어(활용형 포함)를 찾아 빈칸으로 만듭니다. 파란색 표제어는 <b>핵심 단어</b>로 표시됩니다. 글자를 선택할 수 없는 스캔 PDF는 읽지 못합니다.</p>
+        <p class="hint" style="margin-top:12px">예문에서 <b>굵게</b> 표시된 단어가 빈칸이 됩니다. 굵은 표시가 없으면 표제어와 같은 단어(활용형 포함)를 찾아 빈칸으로 만듭니다. 파란색 표제어는 <b>핵심 단어</b>로 표시됩니다. 글자를 선택할 수 없는 스캔 PDF는 읽지 못합니다.<br><b>JSON</b>은 이 사이트의 백업 파일, <code>{"words": [...]}</code>, 단어 배열을 받습니다. 단어마다 <code>term</code>(또는 <code>word</code>) · <code>pos</code> · <code>ko</code> · <code>def</code> · <code>ex</code> · <code>blanks</code>를 쓰고, <code>blanks</code>가 없으면 예문의 <code>{{정답}}</code> 표시나 표제어로 빈칸을 찾습니다.</p>
       </div>
       <div id="imp-loading" class="progress-line" hidden>PDF 읽는 중…</div>
       <div id="imp-preview" hidden>
@@ -736,7 +737,7 @@ mark.ans { background: var(--accent-soft); color: var(--accent-ink); border-radi
   </div>
 </div>
 
-<input type="file" id="file-pdf" accept="application/pdf,.pdf" multiple hidden>
+<input type="file" id="file-pdf" accept="application/pdf,.pdf,application/json,.json" multiple hidden>
 <input type="file" id="file-json" accept="application/json,.json" hidden>
 <div id="toasts"></div>
 
@@ -1466,7 +1467,7 @@ $('btn-import').addEventListener('click', openImport);
 $('file-pdf').addEventListener('change', e => {
   const files = [...e.target.files];
   e.target.value = '';
-  if (files.length) handlePdfFiles(files);
+  if (files.length) handleImportFiles(files);
 });
 /* 페이지 어디에나 끌어다 놓기 */
 let dragDepth = 0;
@@ -1479,39 +1480,67 @@ document.addEventListener('drop', e => {
   const files = [...(e.dataTransfer.files || [])];
   if (!files.length) return;
   e.preventDefault();
-  const pdfs = files.filter(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf');
-  const json = files.find(f => /\.json$/i.test(f.name));
-  if (pdfs.length) handlePdfFiles(pdfs);
-  else if (json) restoreFromFile(json);
-  else toast('PDF 파일만 올릴 수 있습니다', 'bad');
+  const ok = files.filter(f => isPdf(f) || isJson(f));
+  if (ok.length) handleImportFiles(ok);
+  else toast('PDF · JSON 파일만 올릴 수 있습니다', 'bad');
 });
 
-async function handlePdfFiles(files) {
+const isPdf = f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf';
+const isJson = f => /\.json$/i.test(f.name) || f.type === 'application/json';
+/** PDF · JSON 파일들을 읽어 미리보기에 올린다 — 여러 파일이면 단어를 합친다 */
+async function handleImportFiles(files) {
+  files = files.filter(f => isPdf(f) || isJson(f));
+  if (!files.length) { toast('PDF · JSON 파일만 올릴 수 있습니다', 'bad'); return; }
+  // 단어장이 여러 개 든 백업 파일 하나는 단어장별로 그대로 되살린다
+  if (files.length === 1 && isJson(files[0])) {
+    let raw = null;
+    try { raw = JSON.parse(await files[0].text()); } catch (e) { /* 아래에서 다시 읽으며 오류를 보여 준다 */ }
+    if (raw && raw.app === 'vocab-flashcards' && Array.isArray(raw.decks) && raw.decks.length > 1) {
+      if (!$('m-import').hidden) closeModal('m-import');
+      restoreFromFile(files[0]);
+      return;
+    }
+  }
   if ($('m-import').hidden) openImport();
   $('imp-pick').hidden = true;
   $('imp-preview').hidden = true;
   $('imp-loading').hidden = false;
-  $('imp-loading').textContent = 'PDF 읽는 중…';
+  $('imp-loading').textContent = '읽는 중…';
   const all = [];
+  const fileStats = {};
   let title = '';
-  try {
-    const lib = await getPdfLib();
-    for (const [fi, f] of files.entries()) {
-      const data = new Uint8Array(await f.arrayBuffer());
-      const doc = await VocabPDF.extractPdf(data, lib, (p, n) => {
-        $('imp-loading').textContent = `${files.length > 1 ? `(${fi + 1}/${files.length}) ` : ''}${f.name} — ${p} / ${n}쪽 읽는 중…`;
-      });
-      const r = VocabPDF.parseVocab(doc);
-      if (!title) title = prettyTitle(r.title, f.name);
-      r.entries.forEach(e => all.push(e));
+  for (const [fi, f] of files.entries()) {
+    const tag = files.length > 1 ? `(${fi + 1}/${files.length}) ` : '';
+    try {
+      if (isJson(f)) {
+        $('imp-loading').textContent = `${tag}${f.name} 읽는 중…`;
+        let data;
+        try { data = JSON.parse(await f.text()); } catch (e) { throw new Error('JSON 형식이 올바르지 않습니다'); }
+        const r = VocabPDF.parseJson(data);
+        r.decks.forEach(d => {
+          if (!title) title = d.title || prettyTitle('', f.name);
+          d.entries.forEach(e => all.push(e));
+          if (d.stats) Object.assign(fileStats, d.stats);
+        });
+      } else {
+        const lib = await getPdfLib();
+        const data = new Uint8Array(await f.arrayBuffer());
+        const doc = await VocabPDF.extractPdf(data, lib, (p, n) => {
+          $('imp-loading').textContent = `${tag}${f.name} — ${p} / ${n}쪽 읽는 중…`;
+        });
+        const r = VocabPDF.parseVocab(doc);
+        if (!title) title = prettyTitle(r.title, f.name);
+        r.entries.forEach(e => all.push(e));
+      }
+    } catch (err) {
+      console.error(err);
+      resetImport();
+      const m = (err && err.message) || String(err);
+      const msg = /password/i.test((err && err.name) + m) ? '암호가 걸린 PDF는 읽을 수 없습니다.' : `${f.name}을(를) 읽지 못했습니다: ${m}`;
+      $('imp-status').textContent = msg;
+      toast(msg, 'bad');
+      return;
     }
-  } catch (err) {
-    console.error(err);
-    resetImport();
-    const msg = /password/i.test(err && err.name + err.message) ? '암호가 걸린 PDF는 읽을 수 없습니다.' : 'PDF를 읽지 못했습니다: ' + (err && err.message || err);
-    $('imp-status').textContent = msg;
-    toast(msg, 'bad');
-    return;
   }
   if (!all.length) {
     resetImport();
@@ -1522,7 +1551,7 @@ async function handlePdfFiles(files) {
   // 같은 단어가 여러 번 나오면 하나만
   const seen = new Set();
   const entries = all.filter(e => { const k = e.term.toLowerCase(); if (seen.has(k)) return false; seen.add(k); return true; });
-  imp = { entries, on: new Set(entries.map((_, i) => i)), target: 'new' };
+  imp = { entries, on: new Set(entries.map((_, i) => i)), target: 'new', stats: fileStats };
   $('imp-name').value = title;
   $('imp-name').disabled = false;
   $('imp-loading').hidden = true;
@@ -1532,7 +1561,7 @@ async function handlePdfFiles(files) {
 }
 function prettyTitle(meta, file) {
   let t = (meta || '').trim();
-  if (!t) t = file.replace(/\.pdf$/i, '').replace(/^[0-9a-f]{6,}[-_]/i, '').replace(/[_]+/g, ' ');
+  if (!t) t = file.replace(/\.(pdf|json)$/i, '').replace(/^[0-9a-f]{6,}[-_]/i, '').replace(/[_]+/g, ' ');
   return t.slice(0, 80);
 }
 function setSeg(id, v) { document.querySelectorAll(`#${id} button`).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === v))); }
@@ -1594,21 +1623,32 @@ function updateImportStatus() {
   $('imp-go').textContent = n ? `${n}개 가져오기` : '가져오기';
   $('imp-status').textContent = imp && imp.target === 'cur' && activeDeck() ? `"${activeDeck().name}"에 추가 · 이미 있는 단어는 건너뜁니다` : '';
 }
-function entryToWord(e) {
+function entryToWord(e, used) {
   const ex = e.examples.find(x => x.blanks.length) || e.examples[0] || { text: '', blanks: [] };
-  return { id: uid(), term: e.term, pos: e.pos || '', ko: e.ko || '', def: e.def || '', ex: ex.text, blanks: ex.blanks, core: !!e.core, fav: false };
+  // JSON 에서 온 id 는 겹치지 않을 때만 그대로 쓴다 (통계가 id 로 이어진다)
+  const id = e.id && !used.has(e.id) ? e.id : uid();
+  used.add(id);
+  return { id, term: e.term, pos: e.pos || '', ko: e.ko || '', def: e.def || '', ex: ex.text, blanks: ex.blanks, core: !!e.core, fav: !!e.fav };
 }
 $('imp-go').addEventListener('click', () => {
   if (!imp || !imp.on.size) return;
-  const picked = imp.entries.filter((_, i) => imp.on.has(i)).map(entryToWord);
+  const toCur = imp.target === 'cur' && activeDeck();
+  const used = new Set(toCur ? words.map(w => w.id) : []);
+  const chosen = imp.entries.filter((_, i) => imp.on.has(i));
+  const picked = chosen.map(e => entryToWord(e, used));
+  // 백업 JSON 의 오답 통계: id 를 그대로 쓴 단어만 옮긴다
+  const carry = {};
+  picked.forEach((w, k) => { const src = chosen[k].id; if (src && src === w.id && imp.stats && imp.stats[src]) carry[w.id] = imp.stats[src]; });
   let added = picked.length, skipped = 0;
-  if (imp.target === 'cur' && activeDeck()) {
+  if (toCur) {
     const have = new Set(words.map(w => w.term.toLowerCase()));
     const fresh = picked.filter(w => !have.has(w.term.toLowerCase()));
     skipped = picked.length - fresh.length;
     added = fresh.length;
     words = words.concat(fresh);
     saveWords();
+    fresh.forEach(w => { if (carry[w.id]) stats[w.id] = carry[w.id]; });
+    saveStats();
     // 진행 중인 세션에 새 단어를 끼워 넣지 않고 새로 시작한다
     startSession();
   } else {
@@ -1616,6 +1656,8 @@ $('imp-go').addEventListener('click', () => {
     loadDeck(d.id);
     words = picked;
     saveWords();
+    stats = carry;
+    saveStats();
     prog = null;
     startSession();
   }
@@ -1825,7 +1867,8 @@ $('file-json').addEventListener('change', e => {
 async function restoreFromFile(f) {
   let data;
   try { data = JSON.parse(await f.text()); } catch (err) { toast('JSON 파일을 읽지 못했습니다', 'bad'); return; }
-  if (!data || data.app !== 'vocab-flashcards' || !Array.isArray(data.decks)) { toast('영단어 플래시카드 백업 파일이 아닙니다', 'bad'); return; }
+  // 백업이 아닌 단어 JSON 은 가져오기 미리보기로 보낸다
+  if (!data || data.app !== 'vocab-flashcards' || !Array.isArray(data.decks)) { handleImportFiles([f]); return; }
   const same = data.decks.filter(x => x && x.deck && decks.some(d => d.id === x.deck.id)).length;
   const ok = await dialog({
     title: '백업 불러오기',
